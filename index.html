@@ -5,405 +5,454 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>My Conversation Coach</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0a0a0f;color:#e8e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh}
-  @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
-  @keyframes micRing{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.6);opacity:0}}
-  @keyframes speakPulse{0%,100%{opacity:.6}50%{opacity:1}}
-  textarea:focus{border-color:#7c6af5!important;outline:none}
-  ::-webkit-scrollbar{width:4px}
-  ::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:2px}
-  .app{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:0 16px;position:relative;overflow:hidden}
-  .glow{position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:600px;height:400px;border-radius:50%;background:radial-gradient(ellipse,rgba(124,106,245,.1) 0%,transparent 70%);pointer-events:none;z-index:0}
-  .wrap{width:100%;max-width:760px;position:relative;z-index:1}
-  .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(124,106,245,.08);border:1px solid rgba(124,106,245,.27);border-radius:20px;padding:4px 12px;font-size:11px;color:#7c6af5;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
-  h1{font-size:clamp(28px,5vw,42px);font-weight:800;background:linear-gradient(135deg,#e8e8f0,#7878a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em;margin-bottom:8px}
-  .subtitle{color:#7878a0;font-size:15px;margin-bottom:32px}
-  .section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4a4a6a;margin-bottom:12px}
-  .cat-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-  .cat-tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;transition:all .15s ease;font-family:inherit}
-  .scenario-grid{display:grid;gap:10px;margin-bottom:24px}
-  .scenario-card{background:#13131a;border:1.5px solid #2a2a3a;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .15s ease;position:relative}
-  .scenario-card:hover{border-color:#7878a0}
-  .card-icon{font-size:20px;margin-bottom:6px}
-  .card-label{font-size:13px;font-weight:700;color:#e8e8f0;margin-bottom:3px}
-  .card-desc{font-size:11px;color:#7878a0;line-height:1.4;margin-bottom:8px}
-  .card-who{font-size:10px;font-weight:700;letter-spacing:.06em}
-  .style-row{display:flex;gap:8px;margin-bottom:28px}
-  .style-chip{flex:1;padding:10px 12px;border-radius:10px;cursor:pointer;background:#13131a;border:1.5px solid #2a2a3a;text-align:center;transition:all .15s ease}
-  .style-chip-label{font-size:12px;font-weight:700;color:#e8e8f0;margin-bottom:2px}
-  .style-chip-desc{font-size:10px;color:#7878a0}
-  .start-btn{width:100%;padding:16px;border-radius:12px;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:40px;transition:opacity .15s}
-  .chat-header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;border-bottom:1px solid #2a2a3a}
-  .chat-icon{width:36px;height:36px;border-radius:10px;background:rgba(124,106,245,.08);border:1px solid rgba(124,106,245,.27);display:flex;align-items:center;justify-content:center;font-size:18px}
-  .chat-title{font-size:15px;font-weight:700}
-  .chat-style{font-size:11px;color:#7878a0}
-  .header-btns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-  .voice-btn{padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .15s}
-  .stop-btn{padding:6px 10px;border-radius:8px;border:1px solid rgba(248,113,113,.27);background:rgba(248,113,113,.08);color:#f87171;font-size:11px;cursor:pointer;font-weight:600;font-family:inherit}
-  .reset-btn{padding:7px 14px;border-radius:8px;border:1px solid #2a2a3a;background:transparent;color:#7878a0;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit}
-  .messages{flex:1;overflow-y:auto;padding:20px 0;display:flex;flex-direction:column;gap:16px;scrollbar-width:thin}
-  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 0}
-  .your-turn-box{max-width:420px;text-align:center}
-  .your-turn-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7c6af5;margin-bottom:8px;opacity:.8}
-  .your-turn-text{font-size:14px;color:#e8e8f0;line-height:1.7;background:rgba(124,106,245,.08);border:1px solid rgba(124,106,245,.2);border-radius:12px;padding:14px 18px}
-  .your-turn-hint{font-size:12px;color:#7878a0;margin-top:10px}
-  .msg-row{display:flex;gap:8px;align-items:flex-end}
-  .avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-  .bubble{max-width:75%;padding:12px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap}
-  .coach-msg{display:flex;margin-bottom:4px}
-  .coach-bubble{max-width:90%;padding:14px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.04));border:1px solid rgba(74,222,128,.25);font-size:13px;line-height:1.7;color:#c8ffd4}
-  .coach-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4ade80;margin-bottom:6px;opacity:.8}
-  .input-area{padding:16px 0 24px;border-top:1px solid #2a2a3a;flex-shrink:0}
-  .listening-indicator{margin-bottom:8px;display:flex;align-items:center;gap:8px;color:#f87171;font-size:12px;font-weight:600}
-  .mic-error{margin-bottom:8px;font-size:12px;color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:8px 12px}
-  .input-row{display:flex;gap:8px;align-items:flex-end}
-  .mic-btn{width:44px;height:44px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;position:relative;transition:all .2s ease}
-  textarea.msg-input{flex:1;background:#13131a;border:1.5px solid #2a2a3a;border-radius:12px;padding:12px 16px;color:#e8e8f0;font-size:14px;line-height:1.5;resize:none;font-family:inherit;min-height:48px;max-height:140px;transition:border-color .15s ease}
-  .send-btn{width:44px;height:44px;border-radius:10px;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:all .15s ease;cursor:pointer}
-  .apikey-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;max-width:440px;margin:0 auto;padding:24px}
-  .apikey-wrap h2{font-size:22px;font-weight:800;text-align:center}
-  .apikey-wrap p{font-size:13px;color:#7878a0;text-align:center;line-height:1.6}
-  .apikey-wrap a{color:#7c6af5}
-  .api-input{width:100%;background:#13131a;border:1.5px solid #2a2a3a;border-radius:12px;padding:12px 16px;color:#e8e8f0;font-size:14px;font-family:inherit}
-  .api-input:focus{border-color:#7c6af5;outline:none}
-  .api-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c6af5,#a78bfa);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;color:#e8e8f0;font-family:'DM Sans','Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.glow{position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:600px;height:400px;border-radius:50%;background:radial-gradient(ellipse,rgba(124,106,245,.1) 0%,transparent 70%);pointer-events:none;z-index:0}
+.wrap{width:100%;max-width:760px;padding:0 16px;position:relative;z-index:1}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+@keyframes micRing{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.6);opacity:0}}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:2px}
+
+/* API KEY */
+#apikey-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;max-width:440px;margin:0 auto;padding:24px;text-align:center}
+#apikey-screen h2{font-size:24px;font-weight:800}
+#apikey-screen p{font-size:13px;color:#7878a0;line-height:1.6}
+#apikey-screen a{color:#7c6af5}
+#key-input{width:100%;background:#13131a;border:1.5px solid #2a2a3a;border-radius:12px;padding:12px 16px;color:#e8e8f0;font-size:14px;font-family:inherit}
+#key-input:focus{border-color:#7c6af5;outline:none}
+#save-key-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c6af5,#a78bfa);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+#clear-key-btn{background:transparent;border:none;color:#f87171;font-size:12px;cursor:pointer;text-decoration:underline}
+
+/* SETUP */
+#setup-screen{padding-top:32px;display:none}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(124,106,245,.08);border:1px solid rgba(124,106,245,.27);border-radius:20px;padding:4px 12px;font-size:11px;color:#7c6af5;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+h1{font-size:clamp(24px,5vw,38px);font-weight:800;background:linear-gradient(135deg,#e8e8f0,#7878a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em;margin-bottom:8px}
+.subtitle{color:#7878a0;font-size:15px;margin-bottom:32px}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4a4a6a;margin-bottom:12px}
+.cat-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.cat-tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;font-family:inherit;background:#13131a;border:1.5px solid #2a2a3a;color:#7878a0}
+.cat-tab.active{background:var(–cat-soft);border-color:var(–cat-color);color:var(–cat-color)}
+.scenario-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+.scenario-grid.cols3{grid-template-columns:repeat(3,1fr)}
+.scenario-card{background:#13131a;border:1.5px solid #2a2a3a;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .15s}
+.scenario-card.selected{background:var(–cat-soft);border-color:var(–cat-color)}
+.card-icon{font-size:20px;margin-bottom:6px}
+.card-label{font-size:13px;font-weight:700;color:#e8e8f0;margin-bottom:3px}
+.card-desc{font-size:11px;color:#7878a0;line-height:1.4;margin-bottom:8px}
+.card-who{font-size:10px;font-weight:700;letter-spacing:.06em}
+.style-row{display:flex;gap:8px;margin-bottom:28px}
+.style-chip{flex:1;padding:10px 12px;border-radius:10px;cursor:pointer;background:#13131a;border:1.5px solid #2a2a3a;text-align:center;transition:all .15s}
+.style-chip.selected{background:rgba(124,106,245,.08);border-color:#7c6af5}
+.style-chip-label{font-size:12px;font-weight:700;color:#e8e8f0;margin-bottom:2px}
+.style-chip.selected .style-chip-label{color:#7c6af5}
+.style-chip-desc{font-size:10px;color:#7878a0}
+#start-btn{width:100%;padding:16px;border-radius:12px;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:40px;background:#2a2a3a;opacity:.4}
+#start-btn.ready{opacity:1;background:linear-gradient(135deg,#7c6af5,#a78bfa)}
+
+/* CHAT */
+#chat-screen{display:none;flex-direction:column;height:100vh;width:100%;max-width:760px;padding:0 16px}
+.chat-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid #2a2a3a;flex-shrink:0}
+.chat-header-left{display:flex;align-items:center;gap:10px}
+.chat-icon-box{width:36px;height:36px;border-radius:10px;background:rgba(124,106,245,.08);border:1px solid rgba(124,106,245,.27);display:flex;align-items:center;justify-content:center;font-size:18px}
+.chat-title{font-size:15px;font-weight:700}
+.chat-subtitle{font-size:11px;color:#7878a0}
+.header-btns{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.hbtn{padding:6px 12px;border-radius:8px;border:1px solid #2a2a3a;background:transparent;color:#7878a0;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit}
+.hbtn.voice-on{border-color:#7c6af5;background:rgba(124,106,245,.08);color:#7c6af5}
+.hbtn.stop{border-color:rgba(248,113,113,.27);background:rgba(248,113,113,.08);color:#f87171}
+#messages{flex:1;overflow-y:auto;padding:20px 0;display:flex;flex-direction:column;gap:16px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 0;text-align:center}
+.your-turn-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7c6af5;margin-bottom:8px;opacity:.8}
+.your-turn-text{font-size:14px;color:#e8e8f0;line-height:1.7;background:rgba(124,106,245,.08);border:1px solid rgba(124,106,245,.2);border-radius:12px;padding:14px 18px;max-width:400px}
+.your-turn-hint{font-size:12px;color:#7878a0;margin-top:10px}
+.msg-row{display:flex;gap:8px;align-items:flex-end}
+.msg-row.user{justify-content:flex-end}
+.avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:#13131a;border:1px solid #2a2a3a;color:#7878a0}
+.avatar.user{background:#7c6af5;border-color:#7c6af5;color:#fff}
+.bubble{max-width:75%;padding:12px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap;border-radius:16px 16px 16px 4px;background:#13131a;border:1px solid #2a2a3a;color:#e8e8f0}
+.bubble.user{border-radius:16px 16px 4px 16px;background:#7c6af5;border-color:transparent;color:#fff}
+.coach-row{display:flex}
+.coach-bubble{max-width:90%;padding:14px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.04));border:1px solid rgba(74,222,128,.25);font-size:13px;line-height:1.7;color:#c8ffd4}
+.coach-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4ade80;margin-bottom:6px;opacity:.8}
+.typing-bubble{padding:12px 16px;background:#13131a;border:1px solid #2a2a3a;border-radius:16px 16px 16px 4px;display:flex;gap:4px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:#4a4a6a;animation:pulse 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+.input-area{padding:12px 0 20px;border-top:1px solid #2a2a3a;flex-shrink:0}
+.listening-bar{display:none;align-items:center;gap:8px;color:#f87171;font-size:12px;font-weight:600;margin-bottom:8px}
+.listening-bar.active{display:flex}
+.listen-dot{width:8px;height:8px;border-radius:50%;background:#f87171;animation:blink 1s ease-in-out infinite}
+.mic-error-bar{display:none;font-size:12px;color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:8px 12px;margin-bottom:8px}
+.mic-error-bar.active{display:block}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+#mic-btn{width:44px;height:44px;border-radius:10px;border:1.5px solid #2a2a3a;background:#13131a;color:#7878a0;cursor:pointer;font-size:18px;flex-shrink:0;position:relative;transition:all .2s;display:flex;align-items:center;justify-content:center}
+#mic-btn.listening{border-color:#f87171;background:rgba(248,113,113,.15);color:#f87171}
+#mic-btn.listening::before{content:’’;position:absolute;inset:-4px;border-radius:14px;border:1.5px solid #f87171;opacity:.4;animation:micRing 1.2s ease-out infinite}
+#msg-input{flex:1;background:#13131a;border:1.5px solid #2a2a3a;border-radius:12px;padding:12px 16px;color:#e8e8f0;font-size:14px;line-height:1.5;resize:none;font-family:inherit;min-height:48px;max-height:140px;transition:border-color .15s}
+#msg-input:focus{border-color:#7c6af5;outline:none}
+#send-btn{width:44px;height:44px;border-radius:10px;border:none;background:#2a2a3a;color:#4a4a6a;cursor:not-allowed;font-size:18px;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+#send-btn.ready{background:#7c6af5;color:#fff;cursor:pointer}
 </style>
+
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useRef,useEffect,useCallback}=React;
+<div class="glow"></div>
 
+<!-- API KEY SCREEN -->
+
+<div id="apikey-screen">
+  <div style="font-size:48px">🎙️</div>
+  <h2>My Conversation Coach</h2>
+  <p>Enter your Anthropic API key to get started. Saved locally on your device only.</p>
+  <p>Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+  <input id="key-input" type="password" placeholder="sk-ant-..."/>
+  <button id="save-key-btn">Save & Continue →</button>
+  <p style="font-size:11px;color:#4a4a6a">Key saved locally, never shared with anyone.</p>
+  <button id="clear-key-btn">Clear saved key</button>
+</div>
+
+<!-- SETUP SCREEN -->
+
+<div class="wrap" id="setup-screen">
+  <div style="text-align:center;margin-bottom:32px">
+    <div class="badge">✦ My Conversation Coach</div>
+    <h1>Practice Real Conversations</h1>
+    <p class="subtitle">Choose a category, pick a scenario, then start</p>
+  </div>
+  <div class="section-label">Choose a category</div>
+  <div class="cat-tabs" id="cat-tabs"></div>
+  <div class="section-label">Choose a scenario</div>
+  <div class="scenario-grid" id="scenario-grid"></div>
+  <div class="section-label">How should I coach you?</div>
+  <div class="style-row" id="style-row"></div>
+  <button id="start-btn">Start Session →</button>
+</div>
+
+<!-- CHAT SCREEN -->
+
+<div id="chat-screen">
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-icon-box" id="chat-icon">🎭</div>
+      <div>
+        <div class="chat-title" id="chat-title">Session</div>
+        <div class="chat-subtitle" id="chat-subtitle"></div>
+      </div>
+    </div>
+    <div class="header-btns">
+      <button class="hbtn voice-on" id="voice-btn">🔊 Voice On</button>
+      <button class="hbtn stop" id="stop-btn" style="display:none">■ Stop</button>
+      <button class="hbtn" id="new-btn">← New</button>
+      <button class="hbtn" id="key-btn">🔑</button>
+    </div>
+  </div>
+  <div id="messages"></div>
+  <div class="input-area">
+    <div class="listening-bar" id="listening-bar"><div class="listen-dot"></div> Listening… speak now</div>
+    <div class="mic-error-bar" id="mic-error-bar"></div>
+    <div class="input-row">
+      <button id="mic-btn">🎤</button>
+      <textarea id="msg-input" rows="1" placeholder="Type or tap 🎤 to speak…"></textarea>
+      <button id="send-btn">↑</button>
+    </div>
+  </div>
+</div>
+
+<script>
 const CATEGORIES=[
-{id:“work”,label:“Work”,icon:“💼”,color:”#6a9af5”,colorSoft:“rgba(106,154,245,0.08)”,scenarios:[
-{id:“boss”,label:“Pitch to Boss”,icon:“📊”,aiStarts:false,yourTurn:“You requested this meeting — open with your pitch.”,description:“Present an idea or proposal to your manager”,systemPrompt:`You are playing the role of a busy, direct manager. The user is practicing pitching an idea to you. Respond naturally as a skeptical but fair boss — ask clarifying questions, push back on weak points, respond positively to clear structured communication. Keep responses concise (2-4 sentences). After 4-6 exchanges, break character and give a coaching debrief on their clarity and structure.`},
-{id:“conflict”,label:“Workplace Conflict”,icon:“⚡”,aiStarts:true,opening:`Hey, do you have a minute? I've been feeling a bit sidelined lately and wanted to talk about it.`,description:“Navigate tension with a frustrated colleague”,systemPrompt:`You are playing the role of a colleague who feels overlooked or frustrated. Show mild defensiveness, need for acknowledgment, and gradually open up if the user communicates empathetically. Keep responses concise. After 4-6 exchanges, break character and give a coaching debrief on their clarity, empathy, and structure.`},
-{id:“feedback”,label:“Give Feedback”,icon:“🗣️”,aiStarts:false,yourTurn:“You’ve asked for this meeting — open by setting the tone and raising the feedback.”,description:“Deliver constructive feedback to a team member”,systemPrompt:`You are playing the role of a team member receiving feedback. Start slightly defensive, then open up if the feedback is delivered clearly and kindly. After 4-6 exchanges, break character and give a coaching debrief on how structured, empathetic, and specific their feedback was.`},
-{id:“meeting”,label:“Lead a Meeting”,icon:“🗓️”,aiStarts:true,opening:`Okay, I think everyone's here. Are we getting started?`,description:“Facilitate a team discussion and drive decisions”,systemPrompt:`You are playing the role of a team member in a meeting — engaged but sometimes going off-topic. The user is practicing facilitating and driving toward a decision. After 4-6 exchanges, break character and give a coaching debrief on their clarity, direction, and ability to manage the room.`},
-]},
-{id:“social”,label:“Social”,icon:“🌐”,color:”#f56a9a”,colorSoft:“rgba(245,106,154,0.08)”,scenarios:[
-{id:“network”,label:“Networking Event”,icon:“🤝”,aiStarts:false,yourTurn:“You spotted someone interesting — walk over and introduce yourself.”,description:“Meet someone new at a professional event”,systemPrompt:`You are playing the role of a professional at a networking event — friendly but slightly guarded. Ask follow-up questions when they say something interesting, give short answers to generic questions. After 4-6 exchanges, break character and give a coaching debrief on their communication style and how engaging they were.`},
-{id:“smalltalk”,label:“Small Talk”,icon:“☕”,aiStarts:true,opening:`Oh hey, I keep seeing you around here. You live nearby?`,description:“Keep a casual conversation flowing naturally”,systemPrompt:`You are playing the role of someone the user just met casually. Be warm but let silences develop if the user doesn't keep things moving. After 4-6 exchanges, break character and give a coaching debrief on their warmth, listening, and conversational flow.`},
-{id:“meeting_people”,label:“Meeting People”,icon:“👋”,aiStarts:false,yourTurn:“You’re at an event and want to meet someone new — introduce yourself.”,description:“Introduce yourself and make a great first impression”,systemPrompt:`You are playing the role of a stranger the user is meeting for the first time. Be friendly but realistic — warm up if they show genuine interest. After 4-6 exchanges, break character and give a coaching debrief on their first impression, warmth, and how naturally they built rapport.`},
-{id:“party”,label:“Party / Social Event”,icon:“🎉”,aiStarts:true,opening:`*glances over* Oh sorry, am I hogging the drinks table? Ha. I'm Alex, by the way.`,description:“Work a room and keep conversations alive”,systemPrompt:`You are playing the role of a guest at a social party — relaxed, open to good conversation. If they're awkward or generic, naturally drift; if they're fun and engaging, lean in. After 4-6 exchanges, break character and give a coaching debrief on their energy, hooks, and social ease.`},
-{id:“persuade”,label:“Persuade Someone”,icon:“💡”,aiStarts:false,yourTurn:“You want to change their mind — make your opening case clearly and directly.”,description:“Win someone over to your point of view”,systemPrompt:`You are playing the role of someone skeptical of the user's idea. Push back thoughtfully, ask for evidence, only come around if the user makes a genuinely compelling case. After 4-6 exchanges, break character and give a coaching debrief on their persuasion technique, clarity, and use of logic vs. emotion.`},
-{id:“apologize”,label:“Apologize Well”,icon:“🙏”,aiStarts:true,opening:`I've been waiting for you to reach out. I'm not sure what to say right now, honestly.`,description:“Make a genuine, clear apology after a mistake”,systemPrompt:`You are playing the role of someone who was hurt or let down. Show you need genuine acknowledgment, not just a quick sorry. Gradually accept the apology only if sincere and specific. After 4-6 exchanges, break character and give a coaching debrief on how genuine, clear, and accountable their apology was.`},
-]},
-{id:“performance”,label:“Performance”,icon:“🎯”,color:”#f5a96a”,colorSoft:“rgba(245,169,106,0.08)”,scenarios:[
-{id:“presentation”,label:“Public Speaking”,icon:“🎤”,aiStarts:true,opening:`Alright, the room's ready. Whenever you're ready to begin.`,description:“Deliver a clear, confident presentation”,systemPrompt:`You are playing the role of an audience member. React realistically — confused when things are unclear, engaged when interesting, ask questions that expose weak structure. After 4-6 exchanges, break character and give a coaching debrief on their delivery, structure, and clarity.`},
-{id:“interview”,label:“Job Interview”,icon:“📋”,aiStarts:true,opening:`Great to meet you. So — tell me a bit about yourself and why you're interested in this role.`,description:“Answer tough questions with clarity and confidence”,systemPrompt:`You are playing the role of a professional interviewer. Ask probing interview questions, follow up on vague answers, reward structured specific responses. After 4-6 exchanges, break character and give a coaching debrief on their answer structure, confidence, and clarity.`},
-{id:“explain”,label:“Explain Complexity”,icon:“🔍”,aiStarts:false,yourTurn:“Pick something complex you know well — explain it to me like I have no background in it.”,description:“Break down a complex topic to a non-expert”,systemPrompt:`You are playing the role of a curious non-expert. Ask genuine questions when things are unclear, respond with delight when something clicks. After 4-6 exchanges, break character and give a coaching debrief on how well they simplified and structured their explanation.`},
-{id:“negotiate”,label:“Negotiate”,icon:“⚖️”,aiStarts:true,opening:`So, you wanted to talk about your compensation. What's on your mind?`,description:“Push for what you want while keeping rapport”,systemPrompt:`You are playing the role of someone the user is negotiating with. Be firm but reasonable. Only move if the user makes a structured confident case. After 4-6 exchanges, break character and give a coaching debrief on their assertiveness, clarity, and negotiation structure.`},
-]},
-{id:“family”,label:“Family”,icon:“🏠”,color:”#6af5c8”,colorSoft:“rgba(106,245,200,0.08)”,scenarios:[
-{id:“hardtalk”,label:“Hard Conversation”,icon:“💬”,aiStarts:false,yourTurn:“You’ve been putting this off — now’s the moment. Bring it up.”,description:“Raise a sensitive topic with a family member”,systemPrompt:`You are playing the role of a family member who is resistant or emotional. Show defensiveness or vulnerability. Gradually open up if approached with warmth and clarity. After 4-6 exchanges, break character and give a coaching debrief on their empathy, directness, and how they handled emotion.`},
-{id:“boundary”,label:“Set a Boundary”,icon:“🚧”,aiStarts:true,opening:`Hey, I was thinking — it'd be great if you could come over again this weekend, like last time. Same plan?`,description:“Communicate a personal limit clearly and kindly”,systemPrompt:`You are playing the role of a family member who tends to push boundaries. Push back gently and only accept the boundary if stated clearly and firmly. After 4-6 exchanges, break character and give a coaching debrief on their clarity, firmness, and tone.`},
-{id:“support”,label:“Offer Support”,icon:“❤️”,aiStarts:true,opening:`I don't even know where to start. Everything just feels like too much right now.`,description:“Be present and helpful when someone is struggling”,systemPrompt:`You are playing the role of a family member going through something hard. You need to feel heard more than fixed. Pull back if the user jumps to advice too quickly. After 4-6 exchanges, break character and give a coaching debrief on how well they listened, empathized, and supported without over-directing.`},
-{id:“disagree”,label:“Disagree Respectfully”,icon:“🔄”,aiStarts:false,yourTurn:“You disagree with them on something real — bring it up and make your case.”,description:“Hold your ground without damaging the relationship”,systemPrompt:`You are playing the role of a family member who holds a strong opposing view. Show conviction but openness to dialogue if approached respectfully. After 4-6 exchanges, break character and give a coaching debrief on how well they expressed disagreement while maintaining warmth.`},
-]},
+  {id:"work",label:"Work",icon:"💼",color:"#6a9af5",colorSoft:"rgba(106,154,245,0.12)",scenarios:[
+    {id:"boss",label:"Pitch to Boss",icon:"📊",aiStarts:false,yourTurn:"You requested this meeting — open with your pitch.",desc:"Present an idea to your manager",prompt:"You are a busy direct manager. The user is pitching an idea. Be skeptical but fair — ask questions, push back on weak points, respond positively to clear structured communication. 2-4 sentence responses. After 4-6 exchanges break character and give a coaching debrief on their clarity and structure."},
+    {id:"conflict",label:"Workplace Conflict",icon:"⚡",aiStarts:true,opening:"Hey, do you have a minute? I've been feeling a bit sidelined lately and wanted to talk about it.",desc:"Navigate tension with a colleague",prompt:"You are a colleague who feels overlooked. Show mild defensiveness, gradually open up if the user communicates empathetically. Keep responses concise. After 4-6 exchanges break character and give a coaching debrief on their clarity, empathy, and structure."},
+    {id:"feedback",label:"Give Feedback",icon:"🗣️",aiStarts:false,yourTurn:"You've asked for this meeting — open by raising the feedback.",desc:"Deliver constructive feedback",prompt:"You are a team member receiving feedback. Start slightly defensive, open up if feedback is delivered clearly and kindly. After 4-6 exchanges break character and give a coaching debrief on how structured and empathetic their feedback was."},
+    {id:"meeting",label:"Lead a Meeting",icon:"🗓️",aiStarts:true,opening:"Okay, I think everyone's here. Are we getting started?",desc:"Facilitate a team discussion",prompt:"You are a team member in a meeting — engaged but sometimes off-topic. The user is practicing facilitating. After 4-6 exchanges break character and give a coaching debrief on their clarity and direction."},
+  ]},
+  {id:"social",label:"Social",icon:"🌐",color:"#f56a9a",colorSoft:"rgba(245,106,154,0.12)",scenarios:[
+    {id:"network",label:"Networking Event",icon:"🤝",aiStarts:false,yourTurn:"You spotted someone interesting — walk over and introduce yourself.",desc:"Meet someone new professionally",prompt:"You are a professional at a networking event — friendly but slightly guarded. Ask follow-up questions when they say something interesting. After 4-6 exchanges break character and give a coaching debrief on their communication style and how engaging they were."},
+    {id:"smalltalk",label:"Small Talk",icon:"☕",aiStarts:true,opening:"Oh hey, I keep seeing you around here. You live nearby?",desc:"Keep a casual conversation flowing",prompt:"You are someone the user just met casually. Be warm but let silences develop if the user doesn't keep things moving. After 4-6 exchanges break character and give a coaching debrief on their warmth and conversational flow."},
+    {id:"meeting_people",label:"Meeting People",icon:"👋",aiStarts:false,yourTurn:"You're at an event — go ahead and introduce yourself.",desc:"Make a great first impression",prompt:"You are a stranger the user is meeting for the first time. Be friendly but realistic — warm up if they show genuine interest. After 4-6 exchanges break character and give a coaching debrief on their first impression and warmth."},
+    {id:"party",label:"Party / Social Event",icon:"🎉",aiStarts:true,opening:"*glances over* Oh sorry, am I hogging the drinks table? Ha. I'm Alex, by the way.",desc:"Work a room and keep conversations alive",prompt:"You are a guest at a social party — relaxed, open to good conversation. If they're generic naturally drift; if they're fun lean in. After 4-6 exchanges break character and give a coaching debrief on their energy and social ease."},
+    {id:"persuade",label:"Persuade Someone",icon:"💡",aiStarts:false,yourTurn:"You want to change their mind — make your opening case directly.",desc:"Win someone over to your view",prompt:"You are someone skeptical of the user's idea. Push back thoughtfully, only come around if they make a compelling case. After 4-6 exchanges break character and give a coaching debrief on their persuasion technique and clarity."},
+    {id:"apologize",label:"Apologize Well",icon:"🙏",aiStarts:true,opening:"I've been waiting for you to reach out. I'm not sure what to say right now, honestly.",desc:"Make a genuine clear apology",prompt:"You are someone who was hurt or let down. Show you need genuine acknowledgment. Gradually accept only if the apology is sincere and specific. After 4-6 exchanges break character and give a coaching debrief on how genuine and accountable their apology was."},
+  ]},
+  {id:"performance",label:"Performance",icon:"🎯",color:"#f5a96a",colorSoft:"rgba(245,169,106,0.12)",scenarios:[
+    {id:"presentation",label:"Public Speaking",icon:"🎤",aiStarts:true,opening:"Alright, the room's ready. Whenever you're ready to begin.",desc:"Deliver a clear confident presentation",prompt:"You are an audience member. React realistically — confused when unclear, engaged when interesting. After 4-6 exchanges break character and give a coaching debrief on their delivery and clarity."},
+    {id:"interview",label:"Job Interview",icon:"📋",aiStarts:true,opening:"Great to meet you. So — tell me about yourself and why you're interested in this role.",desc:"Answer tough questions confidently",prompt:"You are a professional interviewer. Ask probing questions, follow up on vague answers, reward structured specific responses. After 4-6 exchanges break character and give a coaching debrief on their answer structure and confidence."},
+    {id:"explain",label:"Explain Complexity",icon:"🔍",aiStarts:false,yourTurn:"Pick something complex — explain it to me like I have no background in it.",desc:"Break down complex topics simply",prompt:"You are a curious non-expert. Ask genuine questions when things are unclear, respond with delight when something clicks. After 4-6 exchanges break character and give a coaching debrief on how well they simplified their explanation."},
+    {id:"negotiate",label:"Negotiate",icon:"⚖️",aiStarts:true,opening:"So, you wanted to talk about your compensation. What's on your mind?",desc:"Push for what you want with rapport",prompt:"You are someone the user is negotiating with. Be firm but reasonable. Only move if they make a structured confident case. After 4-6 exchanges break character and give a coaching debrief on their assertiveness and negotiation structure."},
+  ]},
+  {id:"family",label:"Family",icon:"🏠",color:"#6af5c8",colorSoft:"rgba(106,245,200,0.12)",scenarios:[
+    {id:"hardtalk",label:"Hard Conversation",icon:"💬",aiStarts:false,yourTurn:"You've been putting this off — now's the moment. Bring it up.",desc:"Raise a sensitive topic",prompt:"You are a family member who is resistant or emotional. Show defensiveness or vulnerability. Open up if approached with warmth. After 4-6 exchanges break character and give a coaching debrief on their empathy and directness."},
+    {id:"boundary",label:"Set a Boundary",icon:"🚧",aiStarts:true,opening:"Hey, I was thinking — it'd be great if you could come over again this weekend. Same plan?",desc:"Communicate a personal limit kindly",prompt:"You are a family member who tends to push boundaries. Push back gently, only accept the boundary if stated clearly. After 4-6 exchanges break character and give a coaching debrief on their clarity, firmness, and tone."},
+    {id:"support",label:"Offer Support",icon:"❤️",aiStarts:true,opening:"I don't even know where to start. Everything just feels like too much right now.",desc:"Be present when someone is struggling",prompt:"You are a family member going through something hard. You need to feel heard more than fixed. Pull back if the user jumps to advice too quickly. After 4-6 exchanges break character and give a coaching debrief on how well they listened and supported."},
+    {id:"disagree",label:"Disagree Respectfully",icon:"🔄",aiStarts:false,yourTurn:"You disagree with them on something real — bring it up and make your case.",desc:"Hold your ground without damage",prompt:"You are a family member who holds a strong opposing view. Show conviction but openness if approached respectfully. After 4-6 exchanges break character and give a coaching debrief on how well they expressed disagreement while maintaining warmth."},
+  ]},
 ];
 
-const COACHING_STYLES=[
-{id:“interrupt”,label:“Interrupt Me”,description:“Stop me when I lose clarity”},
-{id:“after”,label:“Feedback After”,description:“Let me finish, then coach”},
-{id:“natural”,label:“Play It Straight”,description:“Stay in role, debrief at end”},
+const STYLES=[
+  {id:"interrupt",label:"Interrupt Me",desc:"Stop me when I lose clarity"},
+  {id:"after",label:"Feedback After",desc:"Let me finish, then coach"},
+  {id:"natural",label:"Play It Straight",desc:"Stay in role, debrief at end"},
 ];
 
-const C={bg:”#0a0a0f”,surface:”#13131a”,border:”#2a2a3a”,accent:”#7c6af5”,accentGlow:“rgba(124,106,245,0.15)”,accentSoft:“rgba(124,106,245,0.08)”,text:”#e8e8f0”,textMuted:”#7878a0”,textDim:”#4a4a6a”,success:”#4ade80”,danger:”#f87171”};
+// State
+let apiKey='';
+let activeCat='work';
+let selectedScenario=null;
+let selectedStyle=null;
+let messages=[];
+let loading=false;
+let listening=false;
+let voiceEnabled=true;
+let speaking=false;
+let recognition=null;
+let synth=window.speechSynthesis;
 
-function isCoachMsg(text){return[“coaching debrief”,“break character”,“as your coach”,”[coach]”,“coach feedback”,“debrief:”].some(k=>text.toLowerCase().includes(k));}
+// Storage
+function saveKey(k){try{localStorage.setItem('coach_key',k);sessionStorage.setItem('coach_key',k);document.cookie='coach_key='+encodeURIComponent(k)+';max-age=31536000;path=/';}catch(e){}}
+function loadKey(){try{return localStorage.getItem('coach_key')||sessionStorage.getItem('coach_key')||decodeURIComponent((document.cookie.match(/coach_key=([^;]+)/)||['',''])[1])||'';}catch(e){return '';}}
+function clearKey(){try{localStorage.removeItem('coach_key');sessionStorage.removeItem('coach_key');document.cookie='coach_key=;max-age=0;path=/';}catch(e){}}
 
-function TypingIndicator(){return(<div className="msg-row"><div className=“avatar” style={{background:C.surface,border:`1px solid ${C.border}`,color:C.textMuted}}>AI</div><div className=“bubble” style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:“16px 16px 16px 4px”}}><span style={{display:“flex”,gap:4,alignItems:“center”,height:16}}>{[0,1,2].map(i=><span key={i} style={{width:6,height:6,borderRadius:“50%”,background:C.textDim,display:“inline-block”,animation:`pulse 1.2s ease-in-out ${i*0.2}s infinite`}}/>)}</span></div></div>);}
+// Screens
+function showScreen(name){
+  document.getElementById('apikey-screen').style.display='none';
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('chat-screen').style.display='none';
+  if(name==='apikey'){document.getElementById('apikey-screen').style.display='flex';}
+  else if(name==='setup'){document.getElementById('setup-screen').style.display='block';}
+  else if(name==='chat'){document.getElementById('chat-screen').style.display='flex';}
+}
 
-function App(){
-const saveKey=(k)=>{try{localStorage.setItem(“coach_api_key”,k);sessionStorage.setItem(“coach_api_key”,k);document.cookie=“coach_api_key=”+encodeURIComponent(k)+”;max-age=31536000;path=/”;}catch(e){}};
-const loadKey=()=>{try{return localStorage.getItem(“coach_api_key”)||sessionStorage.getItem(“coach_api_key”)||decodeURIComponent((document.cookie.match(/coach_api_key=([^;]+)/)||[””,””])[1])||””;}catch(e){return “”;}};
-const clearKey=()=>{try{localStorage.removeItem(“coach_api_key”);sessionStorage.removeItem(“coach_api_key”);document.cookie=“coach_api_key=;max-age=0;path=/”;}catch(e){}};
+// Build setup screen
+function buildSetup(){
+  const cat=CATEGORIES.find(c=>c.id===activeCat);
+  
+  // Category tabs
+  const tabsEl=document.getElementById('cat-tabs');
+  tabsEl.innerHTML='';
+  CATEGORIES.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='cat-tab'+(c.id===activeCat?' active':'');
+    btn.style.setProperty('--cat-color',c.color);
+    btn.style.setProperty('--cat-soft',c.colorSoft);
+    btn.innerHTML=c.icon+' '+c.label;
+    btn.onclick=()=>{activeCat=c.id;selectedScenario=null;buildSetup();};
+    tabsEl.appendChild(btn);
+  });
 
-const [apiKey,setApiKey]=useState(()=>loadKey());
-const [keyInput,setKeyInput]=useState(””);
-const [screen,setScreen]=useState(()=>loadKey()?“setup”:“apikey”);
-const [activeCategory,setActiveCategory]=useState(“work”);
-const [scenario,setScenario]=useState(null);
-const [coachStyle,setCoachStyle]=useState(null);
-const [messages,setMessages]=useState([]);
-const [input,setInput]=useState(””);
-const [loading,setLoading]=useState(false);
-const [listening,setListening]=useState(false);
-const [voiceEnabled,setVoiceEnabled]=useState(true);
-const [speaking,setSpeaking]=useState(false);
-const [micError,setMicError]=useState(””);
-const [voiceSupported]=useState(()=>“webkitSpeechRecognition” in window||“SpeechRecognition” in window);
-const [ttsSupported]=useState(()=>“speechSynthesis” in window);
+  // Scenario grid
+  const grid=document.getElementById('scenario-grid');
+  grid.className='scenario-grid'+(cat.scenarios.length>4?' cols3':'');
+  grid.style.setProperty('--cat-color',cat.color);
+  grid.style.setProperty('--cat-soft',cat.colorSoft);
+  grid.innerHTML='';
+  cat.scenarios.forEach(s=>{
+    const card=document.createElement('div');
+    card.className='scenario-card'+(selectedScenario===s.id?' selected':'');
+    card.innerHTML=`<div class="card-icon">${s.icon}</div><div class="card-label">${s.label}</div><div class="card-desc">${s.desc}</div><div class="card-who" style="color:${s.aiStarts?'#4ade80':'#7c6af5'}">${s.aiStarts?'🤖 AI opens':'👤 You open'}</div>`;
+    card.onclick=()=>{selectedScenario=s.id;buildSetup();};
+    grid.appendChild(card);
+  });
 
-const messagesEndRef=useRef(null);
-const textareaRef=useRef(null);
-const recognitionRef=useRef(null);
-const synthRef=useRef(window.speechSynthesis);
+  // Style chips
+  const styleRow=document.getElementById('style-row');
+  styleRow.innerHTML='';
+  STYLES.forEach(s=>{
+    const chip=document.createElement('div');
+    chip.className='style-chip'+(selectedStyle===s.id?' selected':'');
+    chip.innerHTML=`<div class="style-chip-label">${s.label}</div><div class="style-chip-desc">${s.desc}</div>`;
+    chip.onclick=()=>{selectedStyle=s.id;buildSetup();};
+    styleRow.appendChild(chip);
+  });
 
-useEffect(()=>{messagesEndRef.current?.scrollIntoView({behavior:“smooth”})},[messages,loading]);
-useEffect(()=>()=>{recognitionRef.current?.stop();synthRef.current?.cancel();},[]);
+  // Start button
+  const btn=document.getElementById('start-btn');
+  if(selectedScenario&&selectedStyle){btn.className='ready';btn.removeAttribute('disabled');}
+  else{btn.className='';btn.setAttribute('disabled','');}
+}
 
-const allScenarios=CATEGORIES.flatMap(c=>c.scenarios);
-const selectedScenario=allScenarios.find(s=>s.id===scenario);
-const selectedStyle=COACHING_STYLES.find(s=>s.id===coachStyle);
-const currentCategory=CATEGORIES.find(c=>c.id===activeCategory);
+// Chat
+function getScenario(){return CATEGORIES.flatMap(c=>c.scenarios).find(s=>s.id===selectedScenario);}
+function getStyle(){return STYLES.find(s=>s.id===selectedStyle);}
 
 function buildSystemPrompt(){
-const base=selectedScenario?.systemPrompt||””;
-const note=coachStyle===“interrupt”?” IMPORTANT: If the user’s message lacks clarity, interrupt with a quick coaching tip before continuing.”
-:coachStyle===“after”?” After each user message give a short in-role response followed by a [Coach] note on their clarity.”
-:” Stay fully in role until the end, then give a debrief.”;
-return base+note;
+  const s=getScenario();
+  const note=selectedStyle==='interrupt'?' IMPORTANT: If the user lacks clarity, interrupt with a quick coaching tip before continuing.'
+    :selectedStyle==='after'?' After each user message give a short in-role response followed by a [Coach] note on their clarity.'
+    :' Stay fully in role until the end, then give a debrief.';
+  return s.prompt+note;
 }
 
-const speakText=useCallback((text)=>{
-if(!ttsSupported||!voiceEnabled)return;
-synthRef.current.cancel();
-const clean=text.replace(/**|__|~~|[Coach]/gi,””).trim();
-const utter=new SpeechSynthesisUtterance(clean);
-utter.rate=1.0;utter.pitch=1.0;utter.volume=1.0;
-const voices=synthRef.current.getVoices();
-const preferred=voices.find(v=>v.lang.startsWith(“en”)&&v.name.includes(“Natural”))||voices.find(v=>v.lang.startsWith(“en”)&&!v.name.includes(“Google”))||voices.find(v=>v.lang.startsWith(“en”));
-if(preferred)utter.voice=preferred;
-utter.onstart=()=>setSpeaking(true);
-utter.onend=()=>setSpeaking(false);
-utter.onerror=()=>setSpeaking(false);
-synthRef.current.speak(utter);
-},[ttsSupported,voiceEnabled]);
+function isCoach(text){return['coaching debrief','break character','[coach]','coach feedback','debrief:','as your coach'].some(k=>text.toLowerCase().includes(k));}
 
-const stopSpeaking=()=>{synthRef.current?.cancel();setSpeaking(false);};
+function renderMessages(){
+  const el=document.getElementById('messages');
+  if(messages.length===0){
+    const s=getScenario();
+    if(!s.aiStarts&&s.yourTurn){
+      el.innerHTML=`<div class="empty-state"><div style="font-size:40px">${s.icon}</div><div class="your-turn-label">✦ Your turn to open</div><div class="your-turn-text">${s.yourTurn}</div><div class="your-turn-hint">Tap 🎤 to speak or type below.</div></div>`;
+    }else{
+      el.innerHTML=`<div class="empty-state"><div style="font-size:40px">${s.icon}</div><div style="color:#7878a0;font-size:14px;opacity:.5">Starting the scene…</div></div>`;
+    }
+    return;
+  }
+  el.innerHTML='';
+  messages.forEach(msg=>{
+    if(msg.role==='user'){
+      el.innerHTML+=`<div class="msg-row user"><div class="bubble user">${msg.content}</div><div class="avatar user">You</div></div>`;
+    }else if(isCoach(msg.content)){
+      el.innerHTML+=`<div class="coach-row"><div class="coach-bubble"><div class="coach-label">✦ Coach Feedback</div>${msg.content}</div></div>`;
+    }else{
+      el.innerHTML+=`<div class="msg-row"><div class="avatar">AI</div><div class="bubble">${msg.content}</div></div>`;
+    }
+  });
+  if(loading){
+    el.innerHTML+=`<div class="msg-row"><div class="avatar">AI</div><div class="typing-bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  }
+  el.scrollTop=el.scrollHeight;
+}
+
+function speakText(text){
+  if(!voiceEnabled||!synth)return;
+  synth.cancel();
+  const clean=text.replace(/\*\*|__|~~|\[Coach\]/gi,'').trim();
+  const utter=new SpeechSynthesisUtterance(clean);
+  utter.rate=1.0;utter.pitch=1.0;utter.volume=1.0;
+  const voices=synth.getVoices();
+  const v=voices.find(v=>v.lang.startsWith('en')&&v.name.includes('Natural'))||voices.find(v=>v.lang.startsWith('en')&&!v.name.includes('Google'))||voices.find(v=>v.lang.startsWith('en'));
+  if(v)utter.voice=v;
+  utter.onstart=()=>{speaking=true;updateStopBtn();};
+  utter.onend=()=>{speaking=false;updateStopBtn();};
+  utter.onerror=()=>{speaking=false;updateStopBtn();};
+  synth.speak(utter);
+}
+
+function stopSpeaking(){synth&&synth.cancel();speaking=false;updateStopBtn();}
+function updateStopBtn(){document.getElementById('stop-btn').style.display=speaking?'':'none';}
 
 async function sendMessage(text){
-const content=(text||input).trim();
-if(!content||loading)return;
-stopSpeaking();
-const userMsg={role:“user”,content};
-const newMessages=[…messages,userMsg];
-setMessages(newMessages);
-setInput(””);
-if(textareaRef.current)textareaRef.current.style.height=“auto”;
-setLoading(true);
-try{
-let apiMessages=newMessages;
-if(apiMessages[0]?.role===“assistant”){
-apiMessages=[{role:“user”,content:”[Scene begins]”},…apiMessages];
-}
-const res=await fetch(“https://api.anthropic.com/v1/messages”,{
-method:“POST”,
-headers:{“Content-Type”:“application/json”,“x-api-key”:apiKey,“anthropic-version”:“2023-06-01”},
-body:JSON.stringify({model:“claude-sonnet-4-20250514”,max_tokens:1000,system:buildSystemPrompt(),messages:apiMessages}),
-});
-if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}
-const data=await res.json();
-const reply=data.content?.map(b=>b.text||””).join(””)||“Something went wrong.”;
-setMessages(prev=>[…prev,{role:“assistant”,content:reply}]);
-speakText(reply);
-}catch(e){
-setMessages(prev=>[…prev,{role:“assistant”,content:`⚠️ ${e.message}`}]);
-}
-setLoading(false);
+  const content=(text||document.getElementById('msg-input').value).trim();
+  if(!content||loading)return;
+  stopSpeaking();
+  messages.push({role:'user',content});
+  document.getElementById('msg-input').value='';
+  document.getElementById('msg-input').style.height='auto';
+  updateSendBtn();
+  loading=true;
+  renderMessages();
+  try{
+    let apiMsgs=[...messages];
+    if(apiMsgs[0]?.role==='assistant')apiMsgs=[{role:'user',content:'[Scene begins]'},...apiMsgs];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSystemPrompt(),messages:apiMsgs}),
+    });
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}
+    const data=await res.json();
+    const reply=data.content?.map(b=>b.text||'').join('')||'Something went wrong.';
+    messages.push({role:'assistant',content:reply});
+    speakText(reply);
+  }catch(e){
+    messages.push({role:'assistant',content:'⚠️ '+e.message});
+  }
+  loading=false;
+  renderMessages();
 }
 
-function toggleListening(){
-setMicError(””);
-if(listening){recognitionRef.current?.stop();setListening(false);return;}
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!SR){setMicError(“Speech recognition not supported. Use Chrome or Safari.”);return;}
-stopSpeaking();
-try{
-const rec=new SR();
-recognitionRef.current=rec;
-rec.lang=“en-US”;rec.continuous=false;rec.interimResults=true;
-rec.onstart=()=>{setListening(true);setMicError(””);};
-rec.onresult=(e)=>{
-const t=Array.from(e.results).map(r=>r[0].transcript).join(””);
-setInput(t);
-if(e.results[e.results.length-1].isFinal){rec.stop();setListening(false);setTimeout(()=>sendMessage(t),200);}
+function updateSendBtn(){
+  const btn=document.getElementById('send-btn');
+  const val=document.getElementById('msg-input').value.trim();
+  if(val&&!loading){btn.className='ready';}else{btn.className='';}
+}
+
+function toggleMic(){
+  if(listening){recognition&&recognition.stop();setListening(false);return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showMicError('Speech recognition not supported. Use Safari or Chrome.');return;}
+  stopSpeaking();
+  try{
+    recognition=new SR();
+    recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=true;
+    recognition.onstart=()=>{setListening(true);hideMicError();};
+    recognition.onresult=(e)=>{
+      const t=Array.from(e.results).map(r=>r[0].transcript).join('');
+      document.getElementById('msg-input').value=t;
+      updateSendBtn();
+      if(e.results[e.results.length-1].isFinal){recognition.stop();setListening(false);setTimeout(()=>sendMessage(t),200);}
+    };
+    recognition.onerror=(e)=>{
+      setListening(false);
+      if(e.error==='not-allowed')showMicError('Mic blocked. Go to iPad Settings → Safari → Microphone → Allow.');
+      else if(e.error==='no-speech')showMicError('No speech detected. Try again.');
+      else showMicError('Mic error: '+e.error);
+    };
+    recognition.onend=()=>setListening(false);
+    recognition.start();
+  }catch(e){showMicError('Could not start mic: '+e.message);}
+}
+
+function setListening(val){
+  listening=val;
+  const btn=document.getElementById('mic-btn');
+  const bar=document.getElementById('listening-bar');
+  if(val){btn.classList.add('listening');bar.classList.add('active');}
+  else{btn.classList.remove('listening');bar.classList.remove('active');}
+}
+
+function showMicError(msg){const el=document.getElementById('mic-error-bar');el.textContent='⚠️ '+msg;el.classList.add('active');}
+function hideMicError(){document.getElementById('mic-error-bar').classList.remove('active');}
+
+function startSession(){
+  const s=getScenario();
+  const st=getStyle();
+  messages=[];
+  document.getElementById('chat-icon').textContent=s.icon;
+  document.getElementById('chat-title').textContent=s.label;
+  document.getElementById('chat-subtitle').textContent=st.label+' · '+st.desc;
+  showScreen('chat');
+  renderMessages();
+  if(s.aiStarts&&s.opening){
+    setTimeout(()=>{messages.push({role:'assistant',content:s.opening});renderMessages();speakText(s.opening);},300);
+  }
+}
+
+// Event listeners
+document.getElementById('save-key-btn').onclick=()=>{
+  const k=document.getElementById('key-input').value.trim();
+  if(k.startsWith('sk-ant-')){saveKey(k);apiKey=k;showScreen('setup');buildSetup();}
+  else alert('Please enter a valid key starting with sk-ant-');
 };
-rec.onerror=(e)=>{
-setListening(false);
-if(e.error===“not-allowed”)setMicError(“Mic blocked. Go to iPad Settings → Safari → Microphone → Allow.”);
-else if(e.error===“no-speech”)setMicError(“No speech detected. Tap mic and try again.”);
-else setMicError(`Mic error: ${e.error}`);
+document.getElementById('key-input').onkeydown=(e)=>{
+  if(e.key==='Enter'){const k=e.target.value.trim();if(k.startsWith('sk-ant-')){saveKey(k);apiKey=k;showScreen('setup');buildSetup();}}
 };
-rec.onend=()=>setListening(false);
-rec.start();
-}catch(e){setMicError(“Could not start mic: “+e.message);}
-}
+document.getElementById('clear-key-btn').onclick=()=>{clearKey();document.getElementById('key-input').value='';};
+document.getElementById('start-btn').onclick=startSession;
+document.getElementById('new-btn').onclick=()=>{showScreen('setup');buildSetup();};
+document.getElementById('key-btn').onclick=()=>{if(confirm('Change API key?')){clearKey();apiKey='';showScreen('apikey');}};
+document.getElementById('voice-btn').onclick=()=>{
+  voiceEnabled=!voiceEnabled;
+  const btn=document.getElementById('voice-btn');
+  if(voiceEnabled){btn.className='hbtn voice-on';btn.textContent='🔊 Voice On';}
+  else{btn.className='hbtn';btn.textContent='🔇 Voice Off';stopSpeaking();}
+};
+document.getElementById('stop-btn').onclick=stopSpeaking;
+document.getElementById('send-btn').onclick=()=>sendMessage();
+document.getElementById('msg-input').oninput=function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,140)+'px';
+  updateSendBtn();
+};
+document.getElementById('msg-input').onkeydown=(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}};
+document.getElementById('mic-btn').onclick=toggleMic;
 
-function handleKeyDown(e){if(e.key===“Enter”&&!e.shiftKey){e.preventDefault();sendMessage();}}
-
-async function startSession(){
-if(!scenario||!coachStyle)return;
-setMessages([]);setScreen(“chat”);
-const s=allScenarios.find(x=>x.id===scenario);
-if(s?.aiStarts&&s?.opening){
-setTimeout(()=>{const msg={role:“assistant”,content:s.opening};setMessages([msg]);speakText(s.opening);},300);
-}
-}
-
-function reset(){stopSpeaking();recognitionRef.current?.stop();setScreen(“setup”);setMessages([]);setInput(””);setListening(false);}
-
-if(screen===“apikey”)return(
-<div className="apikey-wrap">
-<div style={{fontSize:40}}>🎙️</div>
-<h2>My Conversation Coach</h2>
-<p>Enter your Anthropic API key. It’s saved locally on your device and only used to call the Anthropic API.</p>
-<p>Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
-<input className=“api-input” type=“password” placeholder=“sk-ant-…” value={keyInput} onChange={e=>setKeyInput(e.target.value)}
-onKeyDown={e=>{if(e.key===“Enter”){const t=keyInput.trim();if(t.startsWith(“sk-ant-”)){saveKey(t);setApiKey(t);setScreen(“setup”);}}}}
-/>
-<button className=“api-btn” onClick={()=>{
-const t=keyInput.trim();
-if(t.startsWith(“sk-ant-”)){saveKey(t);setApiKey(t);setScreen(“setup”);}
-else alert(“Please enter a valid key starting with sk-ant-”);
-}}>Save & Continue →</button>
-<p style={{fontSize:11,color:”#4a4a6a”}}>Key saved locally, never shared with anyone.</p>
-<button style={{background:“transparent”,border:“none”,color:”#f87171”,fontSize:12,cursor:“pointer”,textDecoration:“underline”}}
-onClick={()=>{clearKey();setKeyInput(””);}}>Clear saved key</button>
-</div>
-);
-
-if(screen===“setup”)return(
-<div className="app">
-<div className="glow"/>
-<div className="wrap" style={{paddingTop:32}}>
-<div style={{textAlign:“center”,marginBottom:32}}>
-<div className="badge">✦ My Conversation Coach</div>
-<h1>Practice Real Conversations</h1>
-<p className="subtitle">Choose a category, pick a scenario, then start your session</p>
-</div>
-<div className="section-label">Choose a category</div>
-<div className="cat-tabs">
-{CATEGORIES.map(cat=>{const active=activeCategory===cat.id;return(
-<button key={cat.id} className=“cat-tab” onClick={()=>{setActiveCategory(cat.id);setScenario(null);}}
-style={{background:active?cat.colorSoft:”#13131a”,border:`1.5px solid ${active?cat.color:"#2a2a3a"}`,color:active?cat.color:”#7878a0”}}>
-{cat.icon} {cat.label}
-</button>
-);})}
-</div>
-<div className="section-label">Choose a scenario</div>
-<div className=“scenario-grid” style={{gridTemplateColumns:`repeat(${currentCategory?.scenarios.length>4?3:2},1fr)`}}>
-{currentCategory?.scenarios.map(s=>{const sel=scenario===s.id;return(
-<div key={s.id} className=“scenario-card” onClick={()=>setScenario(s.id)}
-style={{background:sel?currentCategory.colorSoft:”#13131a”,border:`1.5px solid ${sel?currentCategory.color:"#2a2a3a"}`,boxShadow:sel?`0 0 20px ${currentCategory.colorSoft}`:“none”}}>
-<div className="card-icon">{s.icon}</div>
-<div className="card-label">{s.label}</div>
-<div className="card-desc">{s.description}</div>
-<div className="card-who" style={{color:s.aiStarts?C.success:C.accent}}>{s.aiStarts?“🤖 AI opens”:“👤 You open”}</div>
-</div>
-);})}
-</div>
-<div className="section-label">How should I coach you?</div>
-<div className="style-row">
-{COACHING_STYLES.map(s=>{const sel=coachStyle===s.id;return(
-<div key={s.id} className=“style-chip” onClick={()=>setCoachStyle(s.id)}
-style={{background:sel?C.accentSoft:”#13131a”,border:`1.5px solid ${sel?C.accent:"#2a2a3a"}`}}>
-<div className="style-chip-label" style={{color:sel?C.accent:C.text}}>{s.label}</div>
-<div className="style-chip-desc">{s.description}</div>
-</div>
-);})}
-</div>
-<button className=“start-btn” disabled={!scenario||!coachStyle} onClick={startSession}
-style={{background:(!scenario||!coachStyle)?”#2a2a3a”:`linear-gradient(135deg,${currentCategory?.color||C.accent},${C.accent})`,opacity:(!scenario||!coachStyle)?0.4:1,boxShadow:`0 4px 24px ${C.accentGlow}`}}>
-Start Session →
-</button>
-</div>
-</div>
-);
-
-return(
-<div className="app" style={{padding:0}}>
-<div className="glow"/>
-<div className=“wrap” style={{display:“flex”,flexDirection:“column”,height:“100vh”,padding:“0 16px”}}>
-<div className="chat-header">
-<div style={{display:“flex”,alignItems:“center”,gap:10}}>
-<div className="chat-icon">{selectedScenario?.icon}</div>
-<div>
-<div className="chat-title">{selectedScenario?.label}</div>
-<div className="chat-style">{selectedStyle?.label} · {selectedStyle?.description}</div>
-</div>
-</div>
-<div className="header-btns">
-{ttsSupported&&(
-<button className=“voice-btn” onClick={()=>{setVoiceEnabled(v=>!v);if(speaking)stopSpeaking();}}
-style={{border:`1px solid ${voiceEnabled?C.accent:"#2a2a3a"}`,background:voiceEnabled?C.accentSoft:“transparent”,color:voiceEnabled?C.accent:”#7878a0”}}>
-<span style={{animation:speaking&&voiceEnabled?“speakPulse .8s ease-in-out infinite”:“none”}}>{voiceEnabled?“🔊”:“🔇”}</span>
-{voiceEnabled?“Voice On”:“Voice Off”}
-</button>
-)}
-{speaking&&<button className="stop-btn" onClick={stopSpeaking}>■ Stop</button>}
-<button className="reset-btn" onClick={reset}>← New</button>
-<button className=“reset-btn” onClick={()=>{if(confirm(“Change API key?”)){clearKey();setApiKey(””);setScreen(“apikey”);}}}>🔑</button>
-</div>
-</div>
-<div className="messages">
-{messages.length===0&&(
-<div className="empty-state">
-<div style={{fontSize:40}}>{selectedScenario?.icon}</div>
-{!selectedScenario?.aiStarts&&selectedScenario?.yourTurn?(
-<div className="your-turn-box">
-<div className="your-turn-label">✦ Your turn to open</div>
-<div className="your-turn-text">{selectedScenario.yourTurn}</div>
-<div className="your-turn-hint">{voiceSupported?“Tap 🎤 to speak or type below.”:“Type your opening line below.”}</div>
-</div>
-):(
-<div style={{fontSize:14,color:C.textMuted,opacity:.5}}>Starting the scene…</div>
-)}
-</div>
-)}
-{messages.map((msg,i)=>{
-const isCoach=msg.role===“assistant”&&isCoachMsg(msg.content);
-if(isCoach)return(<div key={i} className="coach-msg"><div className="coach-bubble"><div className="coach-label">✦ Coach Feedback</div>{msg.content}</div></div>);
-const isUser=msg.role===“user”;
-return(
-<div key={i} className=“msg-row” style={{justifyContent:isUser?“flex-end”:“flex-start”}}>
-{!isUser&&<div className=“avatar” style={{background:C.surface,border:`1px solid ${C.border}`,color:C.textMuted}}>AI</div>}
-<div className=“bubble” style={{background:isUser?C.accent:C.surface,border:`1px solid ${isUser?"transparent":C.border}`,borderRadius:isUser?“16px 16px 4px 16px”:“16px 16px 16px 4px”,color:isUser?”#fff”:C.text}}>{msg.content}</div>
-{isUser&&<div className=“avatar” style={{background:C.accent,color:”#fff”}}>You</div>}
-</div>
-);
-})}
-{loading&&<TypingIndicator/>}
-<div ref={messagesEndRef}/>
-</div>
-<div className="input-area">
-{listening&&<div className="listening-indicator"><span style={{animation:“speakPulse .8s ease-in-out infinite”}}>●</span> Listening… speak now</div>}
-{micError&&<div className="mic-error">⚠️ {micError}</div>}
-<div className="input-row">
-{voiceSupported&&(
-<button className=“mic-btn” onClick={toggleListening} disabled={loading}
-style={{background:listening?“rgba(248,113,113,.15)”:C.surface,border:`1.5px solid ${listening?C.danger:C.border}`,color:listening?C.danger:C.textMuted,cursor:loading?“not-allowed”:“pointer”}}>
-{listening&&<>
-<span style={{position:“absolute”,inset:-4,borderRadius:14,border:`1.5px solid ${C.danger}`,opacity:.4,animation:“micRing 1.2s ease-out infinite”}}/>
-<span style={{position:“absolute”,inset:-8,borderRadius:18,border:`1px solid ${C.danger}`,opacity:.2,animation:“micRing 1.2s ease-out .3s infinite”}}/>
-</>}
-🎤
-</button>
-)}
-<textarea className=“msg-input” ref={textareaRef}
-placeholder={voiceSupported?“Type or tap 🎤 to speak…”:“Type your response… (Enter to send)”}
-value={input} rows={1}
-onChange={e=>{setInput(e.target.value);e.target.style.height=“auto”;e.target.style.height=Math.min(e.target.scrollHeight,140)+“px”;}}
-onKeyDown={handleKeyDown}
-/>
-<button className=“send-btn” onClick={()=>sendMessage()} disabled={!input.trim()||loading}
-style={{background:(!input.trim()||loading)?”#2a2a3a”:C.accent,color:(!input.trim()||loading)?”#4a4a6a”:”#fff”,cursor:(!input.trim()||loading)?“not-allowed”:“pointer”}}>↑</button>
-</div>
-</div>
-</div>
-</div>
-);
-}
-
-ReactDOM.render(<App/>,document.getElementById(“root”));
+// Init
+apiKey=loadKey();
+if(apiKey){showScreen('setup');buildSetup();}
+else{showScreen('apikey');}
 </script>
 
 </body>
