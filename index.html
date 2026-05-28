@@ -238,6 +238,7 @@ function buildSetup(){
     btn.className='cat-tab'+(c.id===activeCat?' active':'');
     btn.style.setProperty('--cat-color',c.color);
     btn.style.setProperty('--cat-soft',c.colorSoft);
+    if(c.id===activeCat){btn.style.background=c.colorSoft;btn.style.borderColor=c.color;btn.style.color=c.color;}else{btn.style.background='#13131a';btn.style.borderColor='#2a2a3a';btn.style.color='#7878a0';}
     btn.innerHTML=c.icon+' '+c.label;
     btn.onclick=()=>{activeCat=c.id;selectedScenario=null;buildSetup();};
     tabsEl.appendChild(btn);
@@ -251,7 +252,8 @@ function buildSetup(){
   grid.innerHTML='';
   cat.scenarios.forEach(s=>{
     const card=document.createElement('div');
-    card.className='scenario-card'+(selectedScenario===s.id?' selected':'');
+    card.className='scenario-card';
+    if(selectedScenario===s.id){card.style.background=cat.colorSoft;card.style.borderColor=cat.color;}else{card.style.background='#13131a';card.style.borderColor='#2a2a3a';}
     card.innerHTML=`<div class="card-icon">${s.icon}</div><div class="card-label">${s.label}</div><div class="card-desc">${s.desc}</div><div class="card-who" style="color:${s.aiStarts?'#4ade80':'#7c6af5'}">${s.aiStarts?'🤖 AI opens':'👤 You open'}</div>`;
     card.onclick=()=>{selectedScenario=s.id;buildSetup();};
     grid.appendChild(card);
@@ -262,7 +264,8 @@ function buildSetup(){
   styleRow.innerHTML='';
   STYLES.forEach(s=>{
     const chip=document.createElement('div');
-    chip.className='style-chip'+(selectedStyle===s.id?' selected':'');
+    chip.className='style-chip';
+    if(selectedStyle===s.id){chip.style.background='rgba(124,106,245,0.08)';chip.style.borderColor='#7c6af5';chip.querySelector('.style-chip-label').style.color='#7c6af5';}else{chip.style.background='#13131a';chip.style.borderColor='#2a2a3a';chip.querySelector('.style-chip-label').style.color='#e8e8f0';}
     chip.innerHTML=`<div class="style-chip-label">${s.label}</div><div class="style-chip-desc">${s.desc}</div>`;
     chip.onclick=()=>{selectedStyle=s.id;buildSetup();};
     styleRow.appendChild(chip);
@@ -348,7 +351,7 @@ async function sendMessage(text){
     if(apiMsgs[0]?.role==='assistant')apiMsgs=[{role:'user',content:'[Scene begins]'},...apiMsgs];
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSystemPrompt(),messages:apiMsgs}),
     });
     if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}
