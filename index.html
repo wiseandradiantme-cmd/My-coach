@@ -265,8 +265,16 @@ function buildSetup(){
   STYLES.forEach(s=>{
     const chip=document.createElement('div');
     chip.className='style-chip';
-    if(selectedStyle===s.id){chip.style.background='rgba(124,106,245,0.08)';chip.style.borderColor='#7c6af5';chip.querySelector('.style-chip-label').style.color='#7c6af5';}else{chip.style.background='#13131a';chip.style.borderColor='#2a2a3a';chip.querySelector('.style-chip-label').style.color='#e8e8f0';}
     chip.innerHTML=`<div class="style-chip-label">${s.label}</div><div class="style-chip-desc">${s.desc}</div>`;
+    if(selectedStyle===s.id){
+      chip.style.background='rgba(124,106,245,0.08)';
+      chip.style.borderColor='#7c6af5';
+      chip.querySelector('.style-chip-label').style.color='#7c6af5';
+    }else{
+      chip.style.background='#13131a';
+      chip.style.borderColor='#2a2a3a';
+      chip.querySelector('.style-chip-label').style.color='#e8e8f0';
+    }
     chip.onclick=()=>{selectedStyle=s.id;buildSetup();};
     styleRow.appendChild(chip);
   });
